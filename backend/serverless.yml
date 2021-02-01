@@ -19,7 +19,7 @@ provider:
     INDEX_NAME: TodoIndex
     IMAGES_S3_BUCKET: megustacc-serverless-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    AUTH_0_JWKS_URL: "https://dev-lb67h78z.eu.auth0.com/.well-known/jwks.json"
+    AUTH_0_JWKS_URL: https://dev-lb67h78z.eu.auth0.com/.well-known/jwks.json
 
   iamRoleStatements:
     - Effect: Allow
@@ -51,6 +51,7 @@ functions:
           method: get
           authorizer: Auth
           path: todos
+          cors: true
 
 
 
