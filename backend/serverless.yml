@@ -16,7 +16,7 @@ provider:
 
   environment:
     TODOS_TABLE: Todos-${self:provider.stage}
-    INDEX_NAME: TodoIndex
+    INDEX_NAME: TodoIndexByUserId
     IMAGES_S3_BUCKET: megustacc-serverless-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     AUTH_0_JWKS_URL: https://dev-lb67h78z.eu.auth0.com/.well-known/jwks.json
@@ -24,7 +24,7 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - dynamodb:Scan
+        - dynamodb:Query
         - dynamodb:PutItem
         - dynamodb:GetItem
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
@@ -53,17 +53,16 @@ functions:
           path: todos
           cors: true
 
+  # TODO: Configure this function
+  CreateTodo:
+    handler: src/lambda/http/createTodo.handler
+    events:
+      - http:
+          method: post
+          authorizer: Auth
+          path: todos
+          cors: true
 
-
-#  # TODO: Configure this function
-#  GetTodos:
-#  CreateTodo:
-#    handler: src/lambda/http/createTodo.handler
-#    events:
-#      - http:
-#          method: post
-#          path: todos
-#
 #  # TODO: Configure this function
 #  UpdateTodo:
 #    handler: src/lambda/http/updateTodo.handler
@@ -95,25 +94,25 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: partitionKey
+          - AttributeName: userId
             AttributeType: S
-          - AttributeName: sortKey
+          - AttributeName: todoId
             AttributeType: S
-          - AttributeName: indexKey
+          - AttributeName: createdAt
             AttributeType: S
         KeySchema:
-          - AttributeName: partitionKey
+          - AttributeName: userId
             KeyType: HASH
-          - AttributeName: sortKey
+          - AttributeName: todoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
             KeySchema:
-              - AttributeName: partitionKey
+              - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: indexKey
+              - AttributeName: createdAt
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
