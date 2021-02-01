@@ -8,5 +8,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
 
   // TODO: Implement creating a new TODO item
-  return undefined
+  return {
+    statusCode: 200,
+    body: JSON.stringify(newTodo)
+  }
 }
