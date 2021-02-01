@@ -49,7 +49,10 @@ functions:
     events:
       - http:
           method: get
+          authorizer: Auth
           path: todos
+
+
 
 #  # TODO: Configure this function
 #  GetTodos:
