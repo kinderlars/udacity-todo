@@ -12,9 +12,11 @@ const logger = createLogger('auth')
 // TODO: Provide a URL that can be used to download a certificate that can be used = OK
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
-const jwksUrl = process.env.JWKS_URL
+const jwksUrl = process.env.AUTH_0_JWKS_URL
+
 
 export const handler = async (event: CustomAuthorizerEvent): Promise<CustomAuthorizerResult> => {
+  logger.info(`The provided url ${jwksUrl}`)
   logger.info('Authorizing a user', event.authorizationToken)
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
@@ -53,25 +55,28 @@ export const handler = async (event: CustomAuthorizerEvent): Promise<CustomAutho
 }
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
+  logger.info("Starting token verification")
   const token = getToken(authHeader)
   const jwt: Jwt = decode(token, { complete: true }) as Jwt
 
+  logger.info(`Token provided ${token}`)
 
   // TODO: Implement token verification
   // You should implement it similarly to how it was implemented for the exercise for the lesson 5
   // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
 
   const jwtKid = jwt.header.kid
+  logger.info(`JWT Kid output ${jwtKid}`)
 
-  const jwksData = await getJwksKeys()
+  const jwksData = await getJwksKeys(jwksUrl)
   logger.info(jwksData)
 
-  const jwksKid = jwksData.kid
+  const jwksKid = jwksData[0]
 
   if(!jwtKid === jwksKid)
     throw new Error('Kid properties do not match')
 
-  const cert = jwksData.cert
+  const cert = jwksData[1]
 
   logger.info("Verify user token")
 
@@ -91,13 +96,11 @@ function getToken(authHeader: string): string {
   return token
 }
 
-async function getJwksKeys():Promise<any> {
+async function getJwksKeys(jwksUrl: string):Promise<any> {
   const response = await Axios.get(jwksUrl)
   logger.info(`Reading information from ${jwksUrl}`)
 
   const keys = response.data.keys
-
-  logger.info(keys)
 
   if (!keys || !keys.length)
     return new Error('The JWKS endpoint did not contain any keys');
@@ -120,8 +123,10 @@ async function getJwksKeys():Promise<any> {
 
   logger.info(cert)
 
-  return JSON.parse(cert,signedKey.kid)
+  // const jsonData = `{"cert": "${cert}", "kid": "${signedKey.kid}"}`
+  // logger.info(jsonData)
 
+  return [signedKey.kid,cert]
 }
 
 // From https://gist.github.com/chatu/7738411c7e8dcf604bc5a0aad7937299
