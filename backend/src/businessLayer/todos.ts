@@ -33,6 +33,17 @@ export async function createTodo(userId: string,createTodoRequest: CreateTodoReq
   return result
 }
 
+export async function deleteTodo(userId: string, todoId: string): Promise<boolean> {
+
+  const todo = await todoAccess.getTodo(userId,todoId)
+  if(!todo)
+    throw new Error('No item found')
+
+  logger.info(`Todo ${JSON.stringify(todo)} for user ${userId} is prepared for deletion`)
+
+  return await todoAccess.deleteTodo(todoId, userId)
+}
+
 
 
 

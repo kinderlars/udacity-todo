@@ -26,7 +26,6 @@ export class TodoAccess {
       ExpressionAttributeValues: {
         ':userId': userId
       }
-
     }).promise()
 
     logger.info(`Scan return values ${result}`)
@@ -34,6 +33,21 @@ export class TodoAccess {
 
     logger.info(`Query return ${items}`)
     return items as TodoItem[]
+  }
+
+  async getTodo(userId: string, todoId: string): Promise<TodoItem>{
+    logger.info(`Getting todo item ${todoId} of user ${userId}`)
+
+    const result = await this.docClient.get({
+      TableName: this.todosTable,
+      Key: {
+        todoId,
+        userId
+      }
+    }).promise()
+
+    const item = result.Item
+    return item as TodoItem
   }
 
   async createTodo(todo: TodoItem): Promise<TodoItem> {
@@ -47,5 +61,19 @@ export class TodoAccess {
     return todo
   }
 
+  async deleteTodo(todoId: string,userId: string):Promise<boolean>{
+    logger.info(`Deleting Todo ${todoId}`)
+    logger.info(`Provided parameters user: ${userId} and todoid: ${todoId}`)
+
+    await this.docClient.delete({
+      TableName: this.todosTable,
+      Key: {
+        todoId,
+        userId
+      }
+    }).promise()
+
+    return true
+  }
 
 }
