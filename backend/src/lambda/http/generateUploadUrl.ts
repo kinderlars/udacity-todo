@@ -1,7 +1,7 @@
 import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import {getS3UploadUrl, getTodo, updateAttachmentUrl} from "../../businessLayer/todos";
+import {getS3UploadUrl, getTodo, updateAttachmentUrl} from '../../businessLayer/todos';
 import {parseUserId} from "../../auth/utils";
 
 import {createLogger} from "../../utils/logger";
