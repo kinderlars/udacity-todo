@@ -14,7 +14,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   const result = await deleteTodo(userId,todoId)
 
-  // TODO: Remove a TODO item by id
   return {
     statusCode: 200,
     headers: {

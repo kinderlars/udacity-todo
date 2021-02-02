@@ -23,8 +23,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   const result = await createTodo(userId,newTodo)
 
-
-  // TODO: Implement creating a new TODO item
   return {
     statusCode: 201,
     headers: {

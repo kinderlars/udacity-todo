@@ -3,6 +3,7 @@ import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from "../models/TodoItem";
 import {createLogger} from '../utils/logger'
+import {UpdateTodoRequest} from "../requests/UpdateTodoRequest";
 
 const logger = createLogger('todo-access')
 
@@ -72,6 +73,33 @@ export class TodoAccess {
         userId
       }
     }).promise()
+
+    return true
+  }
+
+  async updateTodo(todoId: string,userId: string, updateTodoRequest: UpdateTodoRequest): Promise<boolean> {
+    logger.info(`Update process in data layer`)
+
+    // Use # when using reserved keywords
+    // https://stackoverflow.com/questions/36698945/scan-function-in-dynamodb-with-reserved-keyword-as-filterexpression-nodejs
+    await this.docClient.update({
+      TableName: this.todosTable,
+      Key: {
+        todoId,
+        userId
+      },
+      UpdateExpression: "set #name = :name, dueDate = :dueDate, done = :done",
+      ExpressionAttributeNames: {
+        "#name": "name"
+      },
+      ExpressionAttributeValues: {
+        ":name": updateTodoRequest.name,
+        ":dueDate": updateTodoRequest.dueDate,
+        ":done": updateTodoRequest.done
+      },
+      ReturnValues: "UPDATED_NEW"
+    }).promise()
+
 
     return true
   }

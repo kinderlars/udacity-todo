@@ -28,6 +28,7 @@ provider:
         - dynamodb:PutItem
         - dynamodb:GetItem
         - dynamodb:DeleteItem
+        - dynamodb:UpdateItem
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     - Effect: Allow
       Action:
@@ -40,11 +41,10 @@ provider:
       Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
 
 functions:
-
+  # TODO: Add iam policies directly to functions
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  # TODO: Configure this function
   GetTodos:
     handler: src/lambda/http/getTodos.handler
     events:
@@ -54,7 +54,6 @@ functions:
           path: todos
           cors: true
 
-  # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
@@ -64,16 +63,16 @@ functions:
           path: todos
           cors: true
 
-#  # TODO: Configure this function
-#  UpdateTodo:
-#    handler: src/lambda/http/updateTodo.handler
-#    events:
-#      - http:
-#          method: patch
-#          path: todos/{todoId}
-#
+  UpdateTodo:
+    handler: src/lambda/http/updateTodo.handler
+    events:
+      - http:
+          method: patch
+          authorizer: Auth
+          path: todos/{todoId}
+          cors: true
 
-  # TODO: Configure this function
+
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     events:
