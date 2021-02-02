@@ -5,9 +5,11 @@ import * as uuid from 'uuid'
 import { createLogger } from '../utils/logger'
 import {UpdateTodoRequest} from "../requests/UpdateTodoRequest";
 import {TodoUpdate} from "../models/TodoUpdate";
+import {ImageAccess} from "../dataLayer/imageAccess";
 
 const logger = createLogger('todos')
 const todoAccess = new TodoAccess()
+const imageAccess = new ImageAccess()
 
 export async function getAllTodos(userId:string): Promise<TodoItem[]> {
   logger.info('Getting all todos')
@@ -70,6 +72,29 @@ export async function updateTodo(todoId: string, userId: string, updateTodoReque
   return result
 
 }
+
+export async function updateAttachmentUrl(todoId: string, userId: string, imageId: string): Promise<TodoItem>{
+  logger.info(`Updating attachment url for image ${imageId} of todo ${todoId} owned by user ${userId}`)
+  const bucketName = process.env.IMAGES_S3_BUCKET
+  const attachementUrl = `https://${bucketName}.s3.amazonaws.com/${imageId}`
+
+  await todoAccess.updateAttachmentUrl(todoId,userId,attachementUrl)
+
+  const updatedTodo = await getTodo(userId,todoId)
+  logger.info(`Fetching updated todo ${JSON.stringify(updatedTodo)}`)
+
+  return updatedTodo
+}
+
+export async function getS3UploadUrl(imageId: string): Promise<string> {
+
+  const presignedUrl = await imageAccess.getUploadUrl(imageId)
+  logger.info(`Retrieved presigned url from data layer ${presignedUrl}`)
+
+  return presignedUrl
+}
+
+
 
 
 
