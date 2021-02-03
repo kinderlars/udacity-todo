@@ -76,9 +76,9 @@ export async function updateTodo(todoId: string, userId: string, updateTodoReque
 export async function updateAttachmentUrl(todoId: string, userId: string, imageId: string): Promise<TodoItem>{
   logger.info(`Updating attachment url for image ${imageId} of todo ${todoId} owned by user ${userId}`)
   const bucketName = process.env.IMAGES_S3_BUCKET
-  const attachementUrl = `https://${bucketName}.s3.amazonaws.com/${imageId}`
+  const attachmentUrl = `https://${bucketName}.s3.amazonaws.com/${imageId}`
 
-  await todoAccess.updateAttachmentUrl(todoId,userId,attachementUrl)
+  await todoAccess.updateAttachmentUrl(todoId,userId,attachmentUrl)
 
   const updatedTodo = await getTodo(userId,todoId)
   logger.info(`Fetching updated todo ${JSON.stringify(updatedTodo)}`)
