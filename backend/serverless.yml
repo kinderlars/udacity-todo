@@ -4,6 +4,8 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
 
 provider:
   name: aws
@@ -31,6 +33,21 @@ provider:
         - xray:PutTraceSegments
         - xray:PutTelemetryRecords
       Resource: '*'
+
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Udagram Todo API
+        description: Serverless application for managing todo items
+    models:
+      - name: CreateTodoRequest
+        contentType: application/json
+        schema: ${file(models/create-todo-request.json)}
+      - name: UpdateTodoRequest
+        contentType: application/json
+        schema: ${file(models/update-todo-request.json)}
 
 functions:
   Auth:
@@ -61,6 +78,12 @@ functions:
           authorizer: Auth
           path: todos
           cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: "Create new Todo"
+            description: "Create new Todo"
+            requestModels:
+              "application/json": CreateTodoRequest
     iamRoleStatementsInherit: true
     iamRoleStatements:
       - Effect: Allow
@@ -76,6 +99,12 @@ functions:
           authorizer: Auth
           path: todos/{todoId}
           cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: "Update Todo"
+            description: "Update Todo"
+            requestModels:
+              "application/json": UpdateTodoRequest
     iamRoleStatementsInherit: true
     iamRoleStatements:
       - Effect: Allow
@@ -122,6 +151,15 @@ functions:
 
 resources:
   Resources:
+
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
 
     TodosTable:
       Type: AWS::DynamoDB::Table
